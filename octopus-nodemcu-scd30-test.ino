@@ -11,12 +11,21 @@
 #define LED_YELLOW  D7
 #define LED_GREEN   D5
 
+#define I2C_SCL     D1
+#define I2C_SDA     D2
+
 byte wire_error;
+int pin_level;
 
 // the setup function runs once when you press reset or power the board
 void setup()
 {
-  // initialize digital pins as outputs.
+  Serial.begin(115200); // serial console for debugging/logging
+
+  // initialize digital pins for I2C communication as inputs.
+  pinMode(I2C_SCL,    INPUT);
+  pinMode(I2C_SDA,    INPUT);
+  // initialize digital pins for LEDs as outputs.
   pinMode(LED_RED,    OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN,  OUTPUT);
@@ -24,8 +33,6 @@ void setup()
   digitalWrite(LED_RED,    LOW);
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_GREEN,  LOW);
-
-  Wire.begin(); // Wire communication begin
 
   // switch on only red LED
   digitalWrite(LED_RED,    HIGH);
@@ -49,6 +56,31 @@ void setup()
   digitalWrite(LED_GREEN,  HIGH);
   delay(3000);
 
+  // switch off all LEDs
+  digitalWrite(LED_RED,    LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN,  LOW);
+  delay(500);
+
+  Serial.println("LED init sequence done.");
+
+  digitalWrite(LED_YELLOW, HIGH);
+  pin_level = digitalRead(I2C_SCL);
+  if( pin_level != HIGH )
+  {
+    Serial.println("I2C pull-up check failed for SCL.");
+    while(1) { delay(500); }
+  }
+  pin_level = digitalRead(I2C_SDA);
+  if( pin_level != HIGH )
+  {
+    Serial.println("I2C pull-up check failed for SDA.");
+    while(1) { delay(500); }
+  }
+  Serial.println("I2C pull-up check done.");
+  digitalWrite(LED_YELLOW, LOW);
+
+  Wire.begin(); // Wire communication begin
   Wire.beginTransmission(0x61);
   wire_error = Wire.endTransmission();
 }

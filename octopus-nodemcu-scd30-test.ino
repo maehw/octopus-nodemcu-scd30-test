@@ -7,6 +7,8 @@
 
 #include <Wire.h> //include Wire.h library
 
+#define BUTTON_PIN  D3  // "GPIO0/FLASH" button on NodeMCU
+
 #define LED_RED     D6
 #define LED_YELLOW  D7
 #define LED_GREEN   D5
@@ -22,6 +24,8 @@ void setup()
 {
   Serial.begin(115200); // serial console for debugging/logging
 
+  // initialize digital pin for the button as input.
+  pinMode(BUTTON_PIN, INPUT);
   // initialize digital pins for I2C communication as inputs.
   pinMode(I2C_SCL,    INPUT);
   pinMode(I2C_SDA,    INPUT);
@@ -83,16 +87,33 @@ void setup()
   Wire.begin(); // Wire communication begin
   Wire.beginTransmission(0x61);
   wire_error = Wire.endTransmission();
+
+   // switch off all LEDs
+  digitalWrite(LED_RED,    LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN,  LOW);
 }
 
 // the loop function runs over and over again forever, indicating I2C communication status
 void loop()
 {
-  // switch off all LEDs
+  // switch off red and yellow LEDs
   digitalWrite(LED_RED,    LOW);
-  digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_GREEN,  LOW);
+
+  // switch yellow LED on or off dependent on button press
+  pin_level = digitalRead(BUTTON_PIN);
+  if( HIGH == pin_level )
+  {
+    digitalWrite(LED_YELLOW, LOW);
+  }
+  else
+  {
+    digitalWrite(LED_YELLOW, HIGH);
+  }
+  
   delay(500);
+
 
   if(0 == wire_error)
   {
@@ -104,5 +125,17 @@ void loop()
     // switch on only red LED
     digitalWrite(LED_RED, HIGH);
   }
+
+  // switch yellow LED on or off dependent on button press
+  pin_level = digitalRead(BUTTON_PIN);
+  if( HIGH == pin_level )
+  {
+    digitalWrite(LED_YELLOW, LOW);
+  }
+  else
+  {
+    digitalWrite(LED_YELLOW, HIGH);
+  }
+
   delay(500);
 }
